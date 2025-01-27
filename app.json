@@ -8,19 +8,19 @@
     "stack": "container",
   "env": {
     "SESSION_ID": {
-      "description": "Put the session-id here.",
+      "description": "3H2ZQ6GC",
       "required": true,
       "value": ""
     },  
     
     "ALIVE_IMG": {
-      "description": "paste your image url if you don't have you can use this public url.",
+      "description": "/storage/emulated/0/Android/media/com.whatsapp/WhatsApp/Media/WhatsApp Images/IMG-20250127-WA0167.jpg",
       "required": true,
       "value": "https://files.catbox.moe/osriwc.jpg"
     }, 
     
     "ALIVE_MSG": {
-      "description": "paste your alive message hear.",
+      "description": "THIS IS ABSOLUE.",
       "required": true,
       "value": "HI DEAR IM ONLINE.!!♻️"
     },
