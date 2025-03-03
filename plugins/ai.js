@@ -11,581 +11,152 @@ YT: KermHackTools
 Github: Kgtech-cmr
 */
 
-const config = require('../config');
-const { cmd, commands } = require('../command');
-const { fetchJson } = require('../lib/functions');
+const axios = require("axios");
+const { cmd } = require("../command");
 
 cmd({
-  pattern: "ai",
-  alias: ["chatgpt","gpt"],
-  react: "🤖",
-  desc: "AI chat.",
-  category: "main",
-  filename: __filename
-}, async (conn, mek, m, {
-  from,
-  quoted,
-  body,
-  isCmd,
-  command,
-  args,
-  q,
-  isGroup,
-  sender,
-  senderNumber,
-  botNumber2,
-  botNumber,
-  pushname,
-  isMe,
-  isOwner,
-  groupMetadata,
-  groupName,
-  participants,
-  groupAdmins,
-  isBotAdmins,
-  isAdmins,
-  reply
-}) => {
-  try {
-    if (!q) return reply("Please ask a question or provide input for the AI.");
+    pattern: "gpt",
+    alias: "ai",
+    desc: "Interact with ChatGPT using the Dreaded API.",
+    category: "ai",
+    react: "🤖",
+    use: "<your query>",
+    filename: __filename,
+}, async (conn, mek, m, { from, args, q, reply }) => {
+    try {
+        // Vérification de l'entrée utilisateur
+        if (!q) return reply("⚠️ Please provide a query for ChatGPT.\n\nExample:\n.gpt What is AI?");
 
-    const data = await fetchJson(`https://api.davidcyriltech.my.id/ai/gpt4omini?text=${q}`);
-    console.log(data);
+        // Utilisation de `${text}` dans le endpoint API
+        const text = q;  // Texte de la requête de l'utilisateur
+        const encodedText = encodeURIComponent(text);  // S'assurer que le texte est encodé correctement
 
-    if (!data.message) return reply("No response from the AI.");
+        const url = `https://api.dreaded.site/api/chatgpt?text=${encodedText}`;
 
-    return reply(` \`🤖 KERM V1 AI RESPONSE:\` \n\n${data.message}`);
-  } catch (error) {
-    console.error(error);
-    reply(`An error occurred: ${error.message}`);
-  }
+        console.log('Requesting URL:', url);  // Afficher l'URL pour vérifier
+
+        // Appel à l'API avec headers personnalisés (ajoute des headers si nécessaire)
+        const response = await axios.get(url, {
+            headers: {
+                'User-Agent': 'Mozilla/5.0',  // Ajouter un User-Agent pour simuler une requête valide
+                'Accept': 'application/json',  // Spécifier que l'on attend une réponse JSON
+            }
+        });
+
+        // Déboguer et afficher la réponse complète
+        console.log('Full API Response:', response.data);
+
+        // Vérification de la structure de la réponse
+        if (!response || !response.data || !response.data.result) {
+            return reply("❌ No response received from the GPT API. Please try again later.");
+        }
+
+        // Extraire uniquement le texte de la réponse (le prompt)
+        const gptResponse = response.data.result.prompt;
+
+        if (!gptResponse) {
+            return reply("❌ The API returned an unexpected format. Please try again later.");
+        }
+
+        // Image AI à envoyer
+        const ALIVE_IMG = 'https://i.imgur.com/R4ebueM.jpeg'; // Remplacez par l'URL de votre image AI
+
+        // Légende avec des informations formatées
+        const formattedInfo = `🤖 *ChatGPT Response:*\n\n${gptResponse}`;
+
+        // Envoyer le message avec image et légende
+        await conn.sendMessage(from, {
+            image: { url: ALIVE_IMG }, // Assurez-vous que l'URL est valide
+            caption: formattedInfo,
+            contextInfo: { 
+                mentionedJid: [m.sender],
+                forwardingScore: 999,
+                isForwarded: true,
+                forwardedNewsletterMessageInfo: {
+                    newsletterJid: '120363321386877609@newsletter',
+                    newsletterName: '𝐊𝐄𝐑𝐌 𝐀𝐈',
+                    serverMessageId: 143
+                }
+            }
+        }, { quoted: mek });
+
+    } catch (error) {
+        console.error("Error in GPT command:", error);
+
+        // Affichage du message d'erreur dans la console pour plus de détails
+        if (error.response) {
+            console.log("Error Response Data:", error.response.data);
+        } else {
+            console.log("Error Details:", error.message);
+        }
+
+        // Répondre avec des détails de l'erreur
+        const errorMessage = `
+❌ An error occurred while processing the GPT command.
+🛠 *Error Details*:
+${error.message}
+
+Please report this issue or try again later.
+        `.trim();
+        return reply(errorMessage);
+    }
 });
-
-//==========KERM MISTRA
-
 cmd({
-  pattern: "mistraai",
-  alias: ["mistra", "mitra"],
-  react: "🪄",
-  desc: "AI chat.",
-  category: "main",
-  filename: __filename
-}, async (conn, mek, m, {
-  from,
-  quoted,
-  body,
-  isCmd,
-  command,
-  args,
-  q,
-  isGroup,
-  sender,
-  senderNumber,
-  botNumber2,
-  botNumber,
-  pushname,
-  isMe,
-  isOwner,
-  groupMetadata,
-  groupName,
-  participants,
-  groupAdmins,
-  isBotAdmins,
-  isAdmins,
-  reply
-}) => {
-  try {
-    if (!q) return reply("Please ask a question or provide input for the AI.");
+    pattern: "llama3",
+    desc: "Get a response from Llama3 AI using the provided prompt.",
+    category: "ai",
+    react: "🤖",
+    filename: __filename,
+    use: ".llama3 <your prompt>"
+}, async (conn, mek, m, { from, q, reply }) => {
+    try {
+        // Check if a prompt is provided by the user
+        if (!q) return reply("⚠️ Please provide a prompt for Llama3 AI.");
 
-    const data = await fetchJson(`https://pikabotzapi.vercel.app/ai/mistral/?apikey=anya-md&message=${q}`);
-    console.log(data);
+        // Inform the user that the request is being processed
+        await reply("> *Processing your prompt...*");
 
-    if (!data.message) return reply("No response from the AI.");
+        // API URL with encoded user prompt
+        const apiUrl = `https://api.davidcyriltech.my.id/ai/llama3?text=${encodeURIComponent(q)}`;
 
-    return reply(` \`🤖 KERM V1 MISTRA AI:\` \n\n${data.message}`);
-  } catch (error) {
-    console.error(error);
-    reply(`An error occurred: ${error.message}`);
-  }
-});
+        // Send a GET request to the API
+        const response = await axios.get(apiUrl);
+        console.log("Llama3 API Response:", response.data);
 
-//====KERM GPT 3
+        // Extract AI response
+        let llamaResponse;
+        if (typeof response.data === "string") {
+            llamaResponse = response.data.trim();
+        } else if (typeof response.data === "object") {
+            llamaResponse = response.data.response || response.data.result || JSON.stringify(response.data);
+        } else {
+            llamaResponse = "Unable to process the AI response.";
+        }
 
-cmd({
-  pattern: "gpt3",
-  alias: ["gptturbo", "chatgpt3"],
-  react: "😇",
-  desc: "AI chat.",
-  category: "main",
-  filename: __filename
-}, async (conn, mek, m, {
-  from,
-  quoted,
-  body,
-  isCmd,
-  command,
-  args,
-  q,
-  isGroup,
-  sender,
-  senderNumber,
-  botNumber2,
-  botNumber,
-  pushname,
-  isMe,
-  isOwner,
-  groupMetadata,
-  groupName,
-  participants,
-  groupAdmins,
-  isBotAdmins,
-  isAdmins,
-  reply
-}) => {
-  try {
-    if (!q) return reply("Please ask a question or provide input for the AI.");
+        // AI image to attach
+        const AI_IMG = 'https://i.ibb.co/V09y0WJY/mrfrankofc.jpg'; // Replace with a valid image URL
 
-    const data = await fetchJson(`https://api.davidcyriltech.my.id/ai/gpt3?text=${q}`);
-    console.log(data);
+        // Formatted response text
+        const formattedInfo = `🤖 *Llama3 Response:*\n\n${llamaResponse}`;
 
-    if (!data.message) return reply("No response from the AI.");
+        // Send the response with an image
+        await conn.sendMessage(from, {
+            image: { url: AI_IMG }, // Ensure the URL is valid
+            caption: formattedInfo,
+            contextInfo: { 
+                mentionedJid: [m.sender],
+                forwardingScore: 999,
+                isForwarded: true,
+                forwardedNewsletterMessageInfo: {
+                    newsletterJid: '120363321386877609@newsletter',
+                    newsletterName: '𝐊𝐄𝐑𝐌 𝐀𝐈',
+                    serverMessageId: 143
+                }
+            }
+        }, { quoted: mek });
 
-    return reply(` \`🤖 KERM V1 CHATGPT 3:\` \n\n${data.message}`);
-  } catch (error) {
-    console.error(error);
-    reply(`An error occurred: ${error.message}`);
-  }
-});
-
-//==========KERM GPT 4
-
-cmd({
-  pattern: "gpt4",
-  alias: ["ai4", "chatgpt4"],
-  react: "🪄",
-  desc: "AI chat.",
-  category: "main",
-  filename: __filename
-}, async (conn, mek, m, {
-  from,
-  quoted,
-  body,
-  isCmd,
-  command,
-  args,
-  q,
-  isGroup,
-  sender,
-  senderNumber,
-  botNumber2,
-  botNumber,
-  pushname,
-  isMe,
-  isOwner,
-  groupMetadata,
-  groupName,
-  participants,
-  groupAdmins,
-  isBotAdmins,
-  isAdmins,
-  reply
-}) => {
-  try {
-    if (!q) return reply("Please ask a question or provide input for the AI.");
-
-    const data = await fetchJson(`https://api.davidcyriltech.my.id/ai/gpt4omini?text=${q}`);
-    console.log(data);
-
-    if (!data.message) return reply("No response from the AI.");
-
-    return reply(` \`🤖 KERM V1 CHATGPT 4:\` \n\n${data.message}`);
-  } catch (error) {
-    console.error(error);
-    reply(`An error occurred: ${error.message}`);
-  }
-});
-
-//==========KERM LLAMA
-cmd({
-  pattern: "llama3",
-  alias: ["llama", "llama2"],
-  react: "✅",
-  desc: "AI chat.",
-  category: "main",
-  filename: __filename
-}, async (conn, mek, m, {
-  from,
-  quoted,
-  body,
-  isCmd,
-  command,
-  args,
-  q,
-  isGroup,
-  sender,
-  senderNumber,
-  botNumber2,
-  botNumber,
-  pushname,
-  isMe,
-  isOwner,
-  groupMetadata,
-  groupName,
-  participants,
-  groupAdmins,
-  isBotAdmins,
-  isAdmins,
-  reply
-}) => {
-  try {
-    if (!q) return reply("Please ask a question or provide input for the AI.");
-
-    const data = await fetchJson(`https://api.davidcyriltech.my.id/ai/llama3?text=${q}`);
-    console.log(data);
-
-    if (!data.message) return reply("No response from the AI.");
-
-    return reply(` \`🤖 KERM V1 LLAM AI:\` \n\n${data.message}`);
-  } catch (error) {
-    console.error(error);
-    reply(`An error occurred: ${error.message}`);
-  }
-});
-
-//==========KERM META AI
-
-cmd({
-  pattern: "metaai",
-  alias: ["meta", "whatsappai"],
-  react: "🔄",
-  desc: "AI chat.",
-  category: "main",
-  filename: __filename
-}, async (conn, mek, m, {
-  from,
-  quoted,
-  body,
-  isCmd,
-  command,
-  args,
-  q,
-  isGroup,
-  sender,
-  senderNumber,
-  botNumber2,
-  botNumber,
-  pushname,
-  isMe,
-  isOwner,
-  groupMetadata,
-  groupName,
-  participants,
-  groupAdmins,
-  isBotAdmins,
-  isAdmins,
-  reply
-}) => {
-  try {
-    if (!q) return reply("Please ask a question or provide input for the AI.");
-
-    const data = await fetchJson(`https://api.davidcyriltech.my.id/ai/metaai?text=${q}`);
-    console.log(data);
-
-    if (!data.message) return reply("No response from the AI.");
-
-    return reply(` \`🤖 KERM V1 META AI:\` \n\n${data.message}`);
-  } catch (error) {
-    console.error(error);
-    reply(`An error occurred: ${error.message}`);
-  }
-});
-
-//==========KERM GPT 4o
-
-cmd({
-  pattern: "gpt4o",
-  alias: ["ai4", "chatgpt4"],
-  react: "🟢",
-  desc: "AI chat.",
-  category: "main",
-  filename: __filename
-}, async (conn, mek, m, {
-  from,
-  quoted,
-  body,
-  isCmd,
-  command,
-  args,
-  q,
-  isGroup,
-  sender,
-  senderNumber,
-  botNumber2,
-  botNumber,
-  pushname,
-  isMe,
-  isOwner,
-  groupMetadata,
-  groupName,
-  participants,
-  groupAdmins,
-  isBotAdmins,
-  isAdmins,
-  reply
-}) => {
-  try {
-    if (!q) return reply("Please ask a question or provide input for the AI.");
-
-    const data = await fetchJson(`https://api.davidcyriltech.my.id/ai/gpt4omini?text=${q}`);
-    console.log(data);
-
-    if (!data.message) return reply("No response from the AI.");
-
-    return reply(` \`🤖 KERM V1 CHATGPT 4o:\` \n\n${data.message}`);
-  } catch (error) {
-    console.error(error);
-    reply(`An error occurred: ${error.message}`);
-  }
-});
-
-//==========KERM GEMINI
-cmd({
-  pattern: "gemini",
-  alias: ["bard", "googleai"],
-  react: "🪄",
-  desc: "AI chat.",
-  category: "main",
-  filename: __filename
-}, async (conn, mek, m, {
-  from,
-  quoted,
-  body,
-  isCmd,
-  command,
-  args,
-  q,
-  isGroup,
-  sender,
-  senderNumber,
-  botNumber2,
-  botNumber,
-  pushname,
-  isMe,
-  isOwner,
-  groupMetadata,
-  groupName,
-  participants,
-  groupAdmins,
-  isBotAdmins,
-  isAdmins,
-  reply
-}) => {
-  try {
-    if (!q) return reply("Please ask a question or provide input for the AI.");
-
-    const data = await fetchJson(`https://api.dreaded.site/api/gemini2?text=${q}`);
-    console.log(data);
-
-    if (!data.message) return reply("No response from the AI.");
-
-    return reply(` \`🤖 KERM V1 GOOGLE AI:\` \n\n${data.message}`);
-  } catch (error) {
-    console.error(error);
-    reply(`An error occurred: ${error.message}`);
-  }
-});
-
-
- 
-//==========KERM CLAUDE
-cmd({
-  pattern: "claudeai",
-  alias: ["claude", "cloud"],
-  react: "⏳",
-  desc: "AI chat.",
-  category: "main",
-  filename: __filename
-}, async (conn, mek, m, {
-  from,
-  quoted,
-  body,
-  isCmd,
-  command,
-  args,
-  q,
-  isGroup,
-  sender,
-  senderNumber,
-  botNumber2,
-  botNumber,
-  pushname,
-  isMe,
-  isOwner,
-  groupMetadata,
-  groupName,
-  participants,
-  groupAdmins,
-  isBotAdmins,
-  isAdmins,
-  reply
-}) => {
-  try {
-    if (!q) return reply("Please ask a question or provide input for the AI.");
-
-    const data = await fetchJson(`https://api.davidcyriltech.my.id/ai/claude?text=${q}`);
-    console.log(data);
-
-    if (!data.message) return reply("No response from the AI.");
-
-    return reply(` \`🤖 KERM V1 CLAUDE AI:\` \n\n${data.message}`);
-  } catch (error) {
-    console.error(error);
-    reply(`An error occurred: ${error.message}`);
-  }
-});
-
-
-//==========KERM AI
-cmd({
-  pattern: "subzero",
-  alias: ["subzeroai", "deeai"],
-  react: "⏳",
-  desc: "AI chat.",
-  category: "main",
-  filename: __filename
-}, async (conn, mek, m, {
-  from,
-  quoted,
-  body,
-  isCmd,
-  command,
-  args,
-  q,
-  isGroup,
-  sender,
-  senderNumber,
-  botNumber2,
-  botNumber,
-  pushname,
-  isMe,
-  isOwner,
-  groupMetadata,
-  groupName,
-  participants,
-  groupAdmins,
-  isBotAdmins,
-  isAdmins,
-  reply
-}) => {
-  try {
-    if (!q) return reply("Please ask a question or provide input for the AI.");
-
-    const data = await fetchJson(`https://api.davidcyriltech.my.id/ai/wizardlm?text=${q}`);
-    console.log(data);
-
-    if (!data.message) return reply("No response from the AI.");
-
-    return reply(` \`🤖 KERM V1 AI:\` \n\n${data.message}`);
-  } catch (error) {
-    console.error(error);
-    reply(`An error occurred: ${error.message}`);
-  }
-});
-
-//==========KERM LORI
-
-cmd({
-  pattern: "lori",
-  alias: ["mrsfrank", "zim"],
-  react: "⏳",
-  desc: "AI chat.",
-  category: "main",
-  filename: __filename
-}, async (conn, mek, m, {
-  from,
-  quoted,
-  body,
-  isCmd,
-  command,
-  args,
-  q,
-  isGroup,
-  sender,
-  senderNumber,
-  botNumber2,
-  botNumber,
-  pushname,
-  isMe,
-  isOwner,
-  groupMetadata,
-  groupName,
-  participants,
-  groupAdmins,
-  isBotAdmins,
-  isAdmins,
-  reply
-}) => {
-  try {
-    if (!q) return reply("Please ask a question or provide input for the AI.");
-
-    const data = await fetchJson(`https://api.davidcyriltech.my.id/ai/lori?text=${q}`);
-    console.log(data);
-
-    if (!data.message) return reply("No response from the AI.");
-
-    return reply(` \`🤖 KERM V1 LORI AI:\` \n\n${data.message}`);
-  } catch (error) {
-    console.error(error);
-    reply(`An error occurred: ${error.message}`);
-  }
-});
-
-
- //=========KERM LUDO AI
-cmd({
-pattern: "ludoai",
-alias: ["ludo", "ludi"],
-react: "🤖",
-desc: "AI chat.",
-category: "main",
-filename: __filename
-}, async (conn, mek, m, {
-from,
-quoted,
-body,
-isCmd,
-command,
-args,
-q,
-isGroup,
-sender,
-senderNumber,
-botNumber2,
-botNumber,
-pushname,
-isMe,
-isOwner,
-groupMetadata,
-groupName,
-participants,
-groupAdmins,
-isBotAdmins,
-isAdmins,
-reply
-}) => {
-try {
-if (!q) return reply("Please ask a question or provide input for the AI.");
-
-// Send processing message
-await reply("Please wait... Processing your request ");
-
-const data = await fetchJson(`https://api.davidcyriltech.my.id/ai/gpt4omini?text=${q}`);
-console.log(data);
-if (!data.message) return reply("No response from the AI.");
-return reply(`\`\`\`🤖 KERM V1 GOOGLE AI:\`\`\` \n\n${data.message}`);
-
-} catch (error) {
-console.error(error);
-reply(`An error occurred: ${error.message}`);
-}
+    } catch (error) {
+        console.error("Error in llama3 command:", error);
+        return reply(`❌ An error occurred: ${error.message}`);
+    }
 });

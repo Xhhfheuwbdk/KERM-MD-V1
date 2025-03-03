@@ -94,6 +94,7 @@ function convertYouTubeLink(_0x584404) {
   }
   return _0x584404;
 }
+
 cmd({
   'pattern': "play",
   'desc': "To download songs.",
@@ -136,7 +137,7 @@ cmd({
       'image': {
         'url': _0x20e1e8.thumbnail
       },
-      'caption': "\n`🎶𝖪𝖤𝖱𝖬-𝖬𝖣－𝖵1🎶`\n\n ━━━━━━━━━━━━━━━━━\n*⟣ Kᴇʀᴍ sᴏɴɢ ᴅᴏᴡɴʟᴏᴀᴅᴇʀ⟢*\n━━━━━━━━━━━━━━━━━\n-  *ᴍʏ ᴄʜᴀɴɴᴇʟ*\n\n*https://whatsapp.com/channel/0029Vafn6hc7DAX3fzsKtn45*\n━━━━━━━━━━━━━━━━━━\n\n> ℹ️ ʀᴇᴘʟʏ ʙᴇʟᴏᴡ ᴛʜᴇ ɴᴜᴍʙᴇʀ ᴛᴏ ᴅᴏᴡɴʟᴏᴀᴅ ғᴏʀᴍᴀᴛ\n\n*1   ┃ ᴀᴜᴅɪᴏ sᴏɴɢ🎵*\n*2   ┃  ᴅᴏᴄᴜᴍᴇɴᴛ sᴏɴɢ🗂️*\n\n> © 2025 || Kᴇʀᴍ ᴍᴅ\n"
+      'caption': "🎶 *𝖪𝖤𝖱𝖬-𝖬𝖣－𝖵1* 🎶\n━━━━━━━━━━━━━━━━━\n*⟣ Kᴇʀᴍ Sᴏɴɢ Dᴏᴡɴʟᴏᴀᴅᴇʀ ⟢*\n━━━━━━━━━━━━━━━━━\n• 𝒟ℴ𝓃’𝓉 𝒻ℴ𝓇𝑔ℯ𝓉 𝓉ℴ 𝒿ℴ𝒾𝓃 𝓂𝓎 𝒸𝒽𝒶𝓃𝓃ℯ𝓁\nhttps://whatsapp.com/channel/0029Vafn6hc7DAX3fzsKtn45\n━━━━━━━━━━━━━━━━━━\n\n> ℹ️ ʀᴇᴘʟʏ ʙᴇʟᴏᴡ ᴛʜᴇ ɴᴜᴍʙᴇʀ ᴛᴏ ᴅᴏᴡɴʟᴏᴀᴅ ғᴏʀᴍᴀᴛ\n\n*1 ┃ ᴀᴜᴅɪᴏ sᴏɴɢ 🎵*\n*2 ┃ ᴅᴏᴄᴜᴍᴇɴᴛ sᴏɴɢ 🗂️*\n\n> © 2025 || Kᴇʀᴍ ᴍᴅ"
     }, {
       'quoted': _0x1439a7
     });
@@ -156,7 +157,7 @@ cmd({
             'key': _0x25ddf5.key
           }
         });
-        const _0x1cc9d0 = await fetchJson('https://api.davidcyriltech.my.id/download/ytmp3?url=' + _0x5ed25e);
+        const _0x1cc9d0 = await fetchJson('https://api.giftedtech.my.id/api/download/y2mate?apikey=gifted&url=' + _0x5ed25e);
         const _0x5741ec = _0x1cc9d0.result.download_url;
         await _0x5351f6.sendMessage(_0x3277a3, {
           'delete': _0x166c67.key
@@ -218,6 +219,7 @@ cmd({
     _0x233cc6('' + _0x3c31c1);
   }
 });
+
 cmd({
   'pattern': 'video',
   'desc': "To download videos.",
@@ -511,6 +513,7 @@ cmd({
     _0x419796('' + _0x2c8571);
   }
 });
+
 cmd({
   'pattern': "yta",
   'alias': "ytmp3",
@@ -551,52 +554,5 @@ cmd({
       console.log("Second attempt failed:", _0x43638b);
       await _0x17432c("*Failed to process the request. Please try again later!*");
     }
-  }
-});
-// temporary songs downloader
-cmd({
-  pattern: "song",
-  react: '🎵',
-  desc: "Download audio from YouTube by searching for keywords (using API 2).",
-  category: "music",
-  use: ".play1 <song name or keywords>",
-  filename: __filename
-}, async (conn, mek, msg, { from, args, reply }) => {
-  try {
-    const searchQuery = args.join(" ");
-    if (!searchQuery) {
-      return reply("*Please provide a song name or keywords to search for.*");
-    }
-
-    reply("*_Kerm downloading your song, please wait...🔍_*");
-
-    const searchResults = await yts(searchQuery);
-    if (!searchResults.videos || searchResults.videos.length === 0) {
-      return reply(`❌ No results found for "${searchQuery}".`);
-    }
-
-    const firstResult = searchResults.videos[0];
-    const videoUrl = firstResult.url;
-
-    // Call the API to download the audio
-    const apiUrl = `https://api.davidcyriltech.my.id/download/ytmp3?url=${videoUrl}`;
-    const response = await axios.get(apiUrl);
-    if (!response.data.success) {
-      return reply(`❌ Failed to fetch audio for "${searchQuery}".`);
-    }
-
-    const { title, download_url } = response.data.result;
-
-    // Send the audio file
-    await conn.sendMessage(from, {
-      audio: { url: download_url },
-      mimetype: 'audio/mp4',
-      ptt: false
-    }, { quoted: mek });
-
-    reply(`✅ *${title}* has been downloaded successfully!`);
-  } catch (error) {
-    console.error(error);
-    reply("❌ An error occurred while processing your request.");
   }
 });

@@ -16,7 +16,7 @@ const { cmd } = require("../command");
 const moment = require("moment");
 
 let botStartTime = Date.now(); // Enregistrement de l'heure de démarrage du bot
-const ALIVE_IMG = "https://i.ibb.co/zrvpnRX/mrfrankofc.jpg"; // Assurez-vous que cette URL est valide
+const ALIVE_IMG = "https://i.ibb.co/dwCrqM45/lordkerm.jpg"; // Assurez-vous que cette URL est valide
 
 cmd({
     pattern: "alive",
@@ -62,7 +62,24 @@ Hi 🫵🏽 ${pushname}
                 isForwarded: true,
                 forwardedNewsletterMessageInfo: {
                     newsletterJid: '120363321386877609@newsletter',
-                    newsletterName: '𝐊𝐄𝐑𝐌 𝐌𝐃',
+                    newsletterName: '𝐊𝐄𝐑𝐌 𝐀𝐋𝐈𝐕𝐄',
+                    serverMessageId: 143
+                }
+            }
+        }, { quoted: mek });
+        
+        // Send the audio file with context info
+        await conn.sendMessage(from, {
+            audio: { url: 'https://raw.githubusercontent.com/Kgtech-cmr/KERM-MD-V1/refs/heads/main/DATABASE/Kermalive.m4a' },
+            mimetype: 'audio/mp4',
+            ptt: true,
+            contextInfo: { 
+                mentionedJid: [m.sender],
+                forwardingScore: 999,
+                isForwarded: true,
+                forwardedNewsletterMessageInfo: {
+                    newsletterJid: '120363321386877609@newsletter',
+                    newsletterName: '𝐊𝐄𝐑𝐌 𝐀𝐋𝐈𝐕𝐄',
                     serverMessageId: 143
                 }
             }

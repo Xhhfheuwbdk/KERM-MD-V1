@@ -59,7 +59,6 @@ const express = require("express");
 const app = express();
 const port = process.env.PORT || 9090;
 
-//=============================================
 
 async function connectToWA() {
 console.log("CONNECTING KERM_MD-V1🧬...");
@@ -112,7 +111,7 @@ let up = `*╭──────────────●●►*
 *YOUR BOT ACTIVE NOW ENJOY♥️🪄*\n\n*PREFIX: ${prefix}*
 
 *╰──────────────●●►*`;
-conn.sendMessage(conn.user.id, { image: { url: `https://files.catbox.moe/yw2ty2.jpeg` }, caption: up })
+conn.sendMessage(conn.user.id, { image: { url: `https://i.ibb.co/j9wH2hpj/lordkerm.jpg` }, caption: up })
 
 }
 })

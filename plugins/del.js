@@ -17,7 +17,7 @@ const path = require("path"); // Gestion des chemins de fichiers
 
 cmd({
   pattern: "delete",
-  react: "❌",
+  react: "🗑️",
   alias: ["del"],
   desc: "Delete the bot's messages or other messages (requires admin for others).",
   category: "group",
@@ -45,6 +45,11 @@ async (conn, mek, m, {
       id: quoted.id, // ID du message cité
       participant: quoted.sender // Expéditeur du message cité
     };
+
+    // Vérifier si l'utilisateur est administrateur ou propriétaire
+    if (!isAdmins && !isOwner) {
+      return await conn.sendMessage(from, { text: "❌ Only admins or the owner can delete messages." }, { quoted: m });
+    }
 
     // Supprimer le message si le bot ou l'owner l'a envoyé
     if (quoted.fromMe || sender === isOwner) {
